@@ -167,7 +167,7 @@ def renderizar():
         donut.dibujar(textura_id=textura_cilindro,
                       t_x=x, t_y=3.5, t_z=1.5,
                       angulo=90.0, eje_x=0.0, eje_y=0.0, eje_z=1.0,  # Rotación 90° en Y
-                      sx=0.22, sy=0.22, sz=0.22)  # Escala grande para verlos
+                      sx=0.22, sy=0.22, sz=0.12)  # Escala grande para verlos
 
     # 5 donuts en el cilindro trasero
     for x in posiciones_x:
@@ -175,7 +175,7 @@ def renderizar():
                       t_x=x, t_y=3.5, t_z=-1.5,
                       # Rotación -90° en Y para el trasero
                       angulo=-90.0, eje_x=0.0, eje_y=0.0, eje_z=1.0,
-                      sx=0.22, sy=0.22, sz=0.22)
+                      sx=0.22, sy=0.22, sz=0.12)
 
 
 # Bucle principal de la aplicación

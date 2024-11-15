@@ -51,17 +51,17 @@ def inicializar_escena():
 screen = inicializar_escena()  # Crea la ventana y configura el contexto OpenGL
 
 # Modelos
-cubo = Modelo("modelos/cubo.obj")  # Cubo
+cubo = Modelo("modelos/cubo.obj")
+cono = Modelo("modelos/cono.obj")
 cilindro = Modelo("modelos/cilindro.obj")
+donut = Modelo("modelos/donut.obj")
+esfera = Modelo("modelos/esfera.obj")
+
+
 # Texturas
 textura_cubo = cargar_textura("texturas/marron.png")  # Textura marrón
 textura_cilindro = cargar_textura("texturas/gris.png")
 
-textura_azul = cargar_textura("texturas/azul.png")
-textura_rojo = cargar_textura("texturas/rojo.png")
-textura_verde = cargar_textura("texturas/verde.png")
-textura_amarillo = cargar_textura("texturas/amarillo.png")
-textura_naranja = cargar_textura("texturas/naranja.png")
 clock = pygame.time.Clock()
 ejecutando = True
 
@@ -83,44 +83,27 @@ def renderizar():
 
     # Dibuja el cubo
     # Dibuja la base (6.0x2.0x0.2)
-    cubo.dibujar(textura_id=textura_cubo, t_x=0.0, t_y=0.1, t_z=0.0,  # t_y=0.1 para ponerlo sobre la rejilla
+    cubo.dibujar(textura_id=textura_cubo, t_x=0.0, t_y=0.2, t_z=0.0,  # t_y=0.1 para ponerlo sobre la rejilla
                  angulo=0.0, eje_x=0.0, eje_y=0.0, eje_z=0.0,
-                 sx=6.0, sy=0.2, sz=2.0)  # Dimensiones según especificaciones
+                 sx=10.0, sy=0.4, sz=4.0)  # Dimensiones según especificaciones
 
-    # Dibuja los tres postes
-    # Poste izquierdo
-    cilindro.dibujar(textura_id=textura_cilindro, t_x=-2.0, t_y=1.1, t_z=0.0,
+    # Dibuja los 4 cilindros en las esquinas
+    # Cilindros ajustados en altura y centrados en las rejillas
+    cilindro.dibujar(textura_id=textura_cilindro, t_x=4.5, t_y=1.7, t_z=1.5,
                      angulo=0.0, eje_x=0.0, eje_y=0.0, eje_z=0.0,
-                     sx=0.2, sy=2.0, sz=0.2)
+                     sx=0.2, sy=3.0, sz=0.2)
 
-    # Poste central
-    cilindro.dibujar(textura_id=textura_cilindro, t_x=0.0, t_y=1.1, t_z=0.0,
+    cilindro.dibujar(textura_id=textura_cilindro, t_x=-4.5, t_y=1.7, t_z=1.5,
                      angulo=0.0, eje_x=0.0, eje_y=0.0, eje_z=0.0,
-                     sx=0.2, sy=2.0, sz=0.2)
+                     sx=0.2, sy=3.0, sz=0.2)
 
-    # Poste derecho
-    cilindro.dibujar(textura_id=textura_cilindro, t_x=2.0, t_y=1.1, t_z=0.0,
+    cilindro.dibujar(textura_id=textura_cilindro, t_x=4.5, t_y=1.7, t_z=-1.5,
                      angulo=0.0, eje_x=0.0, eje_y=0.0, eje_z=0.0,
-                     sx=0.2, sy=2.0, sz=0.2)
+                     sx=0.2, sy=3.0, sz=0.2)
 
-    # Discos poste izquierdo (usando cilindro)
-
-    cilindro.dibujar(textura_id=textura_azul, t_x=-2.0, t_y=0.3, t_z=0.0,
+    cilindro.dibujar(textura_id=textura_cilindro, t_x=-4.5, t_y=1.7, t_z=-1.5,
                      angulo=0.0, eje_x=0.0, eje_y=0.0, eje_z=0.0,
-                     sx=2.0, sy=0.2, sz=2.0)
-    cilindro.dibujar(textura_id=textura_verde, t_x=-2.0, t_y=0.5, t_z=0.0,
-                     angulo=0.0, eje_x=0.0, eje_y=0.0, eje_z=0.0,
-                     sx=1.7, sy=0.2, sz=1.7)
-    cilindro.dibujar(textura_id=textura_amarillo, t_x=-2.0, t_y=0.7, t_z=0.0,
-                     angulo=0.0, eje_x=0.0, eje_y=0.0, eje_z=0.0,
-                     sx=1.4, sy=0.2, sz=1.4)
-    cilindro.dibujar(textura_id=textura_naranja, t_x=-2.0, t_y=0.9, t_z=0.0,
-                     angulo=0.0, eje_x=0.0, eje_y=0.0, eje_z=0.0,
-                     sx=1.1, sy=0.2, sz=1.1)
-    cilindro.dibujar(textura_id=textura_rojo, t_x=-2.0, t_y=1.1, t_z=0.0,
-                     angulo=0.0, eje_x=0.0, eje_y=0.0, eje_z=0.0,
-                     sx=0.8, sy=0.2, sz=0.8)
-
+                     sx=0.2, sy=3.0, sz=0.2)
 
     # Discos sobre
 # Bucle principal de la aplicación

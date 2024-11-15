@@ -58,9 +58,15 @@ donut = Modelo("modelos/donut.obj")
 esfera = Modelo("modelos/esfera.obj")
 
 
+cuarto_esfera = Modelo("modelos/cuarto_esfera.obj")
+
+
 # Texturas
 textura_cubo = cargar_textura("texturas/marron.png")  # Textura marrón
 textura_cilindro = cargar_textura("texturas/gris.png")
+
+textura_donut = cargar_textura("texturas/azul.png")
+
 
 clock = pygame.time.Clock()
 ejecutando = True
@@ -89,23 +95,89 @@ def renderizar():
 
     # Dibuja los 4 cilindros en las esquinas
     # Cilindros ajustados en altura y centrados en las rejillas
-    cilindro.dibujar(textura_id=textura_cilindro, t_x=4.5, t_y=1.7, t_z=1.5,
-                     angulo=0.0, eje_x=0.0, eje_y=0.0, eje_z=0.0,
-                     sx=0.2, sy=3.0, sz=0.2)
 
-    cilindro.dibujar(textura_id=textura_cilindro, t_x=-4.5, t_y=1.7, t_z=1.5,
+    # Cilindro esquina frontal derecha
+    cilindro.dibujar(textura_id=textura_cilindro, t_x=4.5, t_y=1.8, t_z=1.5,
                      angulo=0.0, eje_x=0.0, eje_y=0.0, eje_z=0.0,
-                     sx=0.2, sy=3.0, sz=0.2)
-
-    cilindro.dibujar(textura_id=textura_cilindro, t_x=4.5, t_y=1.7, t_z=-1.5,
+                     sx=0.25, sy=3.5, sz=0.25)
+    # Cilindro esquina frontal izquierda
+    cilindro.dibujar(textura_id=textura_cilindro, t_x=-4.5, t_y=1.8, t_z=1.5,
                      angulo=0.0, eje_x=0.0, eje_y=0.0, eje_z=0.0,
-                     sx=0.2, sy=3.0, sz=0.2)
-
-    cilindro.dibujar(textura_id=textura_cilindro, t_x=-4.5, t_y=1.7, t_z=-1.5,
+                     sx=0.25, sy=3.5, sz=0.25)
+    # Cilindro esquina trasera derecha
+    cilindro.dibujar(textura_id=textura_cilindro, t_x=4.5, t_y=1.8, t_z=-1.5,
                      angulo=0.0, eje_x=0.0, eje_y=0.0, eje_z=0.0,
-                     sx=0.2, sy=3.0, sz=0.2)
+                     sx=0.25, sy=3.5, sz=0.25)
+    # Cilindro esquina trasera izquierda
+    cilindro.dibujar(textura_id=textura_cilindro, t_x=-4.5, t_y=1.8, t_z=-1.5,
+                     angulo=0.0, eje_x=0.0, eje_y=0.0, eje_z=0.0,
+                     sx=0.25, sy=3.5, sz=0.25)
 
-    # Discos sobre
+    # Cilindros horizontales que unen cilindros traseros y delanteros respectivamente
+
+    # Rotarlos 90 grados en eje z
+    # Ajustar escalado para que cubran la distancia entre cilindros verticales
+    # Posicionarlos a altura correcta
+
+    # Cilindro horizontal frontal (conecta los cilindros frontales)
+    cilindro.dibujar(textura_id=textura_cilindro, t_x=0.0, t_y=3.5, t_z=1.5,
+                     angulo=90.0, eje_x=0.0, eje_y=0.0, eje_z=1.0,
+                     sx=0.25, sy=9.0, sz=0.25)  # sy=9.0 para cubrir la distancia entre -4.5 y 4.5
+
+    # Cilindro horizontal trasero (conecta los cilindros traseros)
+    cilindro.dibujar(textura_id=textura_cilindro, t_x=0.0, t_y=3.5, t_z=-1.5,
+                     angulo=90.0, eje_x=0.0, eje_y=0.0, eje_z=1.0,
+                     sx=0.25, sy=9.0, sz=0.25)
+
+    # Se añaden esferas pequeñas en los puntos de union
+    # Se colocan en las 8 intersecciones (4 frontales y 4 traseras)
+
+    # Cuartos de esfera en las intersecciones de los cilindros horizontales
+
+    # Delantero derecho
+    # Delantero derecho
+    # Delantero derecho (se mantiene igual)
+    # Delantero derecho (se mantiene igual)
+    cuarto_esfera.dibujar(textura_id=textura_cilindro, t_x=4.49, t_y=3.48, t_z=1.5,
+                          angulo=-90.0, eje_x=1.0, eje_y=0.0, eje_z=0.0,
+                          sx=0.3, sy=0.3, sz=0.3)
+
+    # Delantero izquierdo (tumbado y mirando hacia fuera)
+    cuarto_esfera.dibujar(textura_id=textura_cilindro, t_x=-4.49, t_y=3.48, t_z=1.5,
+                          angulo=180.0, eje_x=0.0, eje_y=1.0, eje_z=1.0,  # Primero girar en Y
+                          sx=0.3, sy=0.3, sz=0.3)
+
+    # Trasero derecho (se mantiene igual)
+    cuarto_esfera.dibujar(textura_id=textura_cilindro, t_x=4.49, t_y=3.48, t_z=-1.5,
+                          angulo=-90.0, eje_x=1.0, eje_y=0.0, eje_z=0.0,
+                          sx=0.3, sy=0.3, sz=0.3)
+
+    # Trasero izquierdo (tumbado y mirando hacia fuera)
+    cuarto_esfera.dibujar(textura_id=textura_cilindro, t_x=-4.49, t_y=3.48, t_z=-1.5,
+                          angulo=180.0, eje_x=0.0, eje_y=1.0, eje_z=1.0,  # Primero girar en Y
+                          sx=0.3, sy=0.3, sz=0.3)
+
+    # ===========
+    # Dibujo de las anillas
+    # ===========
+    # 5 donuts en el cilindro frontal
+    # 5 donuts en el cilindro frontal
+    posiciones_x = [-3.6, -1.8, 0.0, 1.8, 3.6]  # Distribuidos uniformemente
+    for x in posiciones_x:
+        donut.dibujar(textura_id=textura_cilindro,
+                      t_x=x, t_y=3.5, t_z=1.5,
+                      angulo=90.0, eje_x=0.0, eje_y=0.0, eje_z=1.0,  # Rotación 90° en Y
+                      sx=0.22, sy=0.22, sz=0.22)  # Escala grande para verlos
+
+    # 5 donuts en el cilindro trasero
+    for x in posiciones_x:
+        donut.dibujar(textura_id=textura_cilindro,
+                      t_x=x, t_y=3.5, t_z=-1.5,
+                      # Rotación -90° en Y para el trasero
+                      angulo=-90.0, eje_x=0.0, eje_y=0.0, eje_z=1.0,
+                      sx=0.22, sy=0.22, sz=0.22)
+
+
 # Bucle principal de la aplicación
 while ejecutando:
     delta_time = clock.tick(FPS) / MILLISECONDS_PER_SECOND

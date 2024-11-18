@@ -8,7 +8,7 @@ from configuracion import *
 from luces import configurar_luces
 # Importa cargar_textura para gestionar texturas
 from texturas import cargar_textura
-
+import math
 # Inicialización de la cámara y el modelo 3D
 camara = Camara()
 
@@ -168,7 +168,8 @@ def renderizar():
                       t_x=x, t_y=3.5, t_z=1.5,
                       angulo=90.0, eje_x=0.0, eje_y=0.0, eje_z=1.0,  # Rotación 90° en Y
                       sx=0.22, sy=0.22, sz=0.12)  # Escala grande para verlos
-
+        dibujar_hilo(cilindro, x, 3.5, 1.5, (x, 2.0, 0.0), es_trasero=False)
+        dibujar_esfera_union(cilindro, x, 2.0, 0.0, es_trasero=False)
     # 5 donuts en el cilindro trasero
     for x in posiciones_x:
         donut.dibujar(textura_id=textura_cilindro,
@@ -176,6 +177,55 @@ def renderizar():
                       # Rotación -90° en Y para el trasero
                       angulo=-90.0, eje_x=0.0, eje_y=0.0, eje_z=1.0,
                       sx=0.22, sy=0.22, sz=0.12)
+        dibujar_hilo(esfera, x, 3.5, -1.5, (x, 2.0, 0.0), es_trasero=True)
+        dibujar_esfera_union(esfera, x, 2.0, 0.0, es_trasero=True)
+
+
+def dibujar_hilo(modelo, t_x, t_y, t_z, punto_destino, es_trasero=False):
+    """Dibuja un hilo desde un punto origen a un punto destino"""
+    # Calculamos la longitud
+    dx = punto_destino[0] - t_x
+    dy = punto_destino[1] - (t_y - 0.2)
+    dz = punto_destino[2] - t_z
+    longitud = math.sqrt(dx*dx + dy*dy + dz*dz) * 2.5
+
+    # Ajustamos el punto medio para que el extremo coincida con el donut
+    medio_x = t_x + dx/4  # Desplazamos 1/4 de la distancia en X
+    medio_y = (t_y - 0.2) + dy/2  # Desplazamos 1/4 de la distancia en Y
+    medio_z = t_z + dz/2  # Desplazamos 1/4 de la distancia en Z
+
+    # Ángulo de inclinación
+    angulo = 40.0 if not es_trasero else -40.0
+
+    modelo.dibujar(
+        textura_id=textura_cilindro,
+        t_x=medio_x,
+        t_y=medio_y,
+        t_z=medio_z,
+        angulo=angulo,
+        eje_x=1.0, eje_y=0.0, eje_z=0.0,
+        sx=0.01,
+        sy=longitud/2,  # Mantenemos la mitad de la longitud
+        sz=0.01
+    )
+
+
+def dibujar_esfera_union(modelo, x, y, z, es_trasero=False):
+    """Dibuja una media esfera en el extremo de los hilos"""
+    esfera.dibujar(
+        textura_id=textura_cilindro,
+        t_x=x,
+        t_y=y - 0.3,  # Ajustamos altura para que coincida con los hilos
+        t_z=z,
+        angulo=180.0,  # Rotación para que la parte plana mire hacia arriba
+        eje_x=1.0,
+        eje_y=0.0,
+        eje_z=0.0,
+        sx=0.08,      # Ancho de la media esfera
+        # Altura de la media esfera (más pequeña para que parezca partida)
+        sy=0.04,
+        sz=0.08       # Profundidad igual al ancho para mantener proporción
+    )
 
 
 # Bucle principal de la aplicación

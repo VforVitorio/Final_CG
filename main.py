@@ -56,16 +56,15 @@ cono = Modelo("modelos/cono.obj")
 cilindro = Modelo("modelos/cilindro.obj")
 donut = Modelo("modelos/donut.obj")
 esfera = Modelo("modelos/esfera.obj")
-
-
 cuarto_esfera = Modelo("modelos/cuarto_esfera.obj")
 
 
 # Texturas
-textura_cubo = cargar_textura("texturas/marron.png")  # Textura marrón
-textura_cilindro = cargar_textura("texturas/gris.png")
-
-textura_donut = cargar_textura("texturas/azul.png")
+textura_cubo = cargar_textura("texturas/madera.png")  # Textura marrón
+textura_cilindro = cargar_textura("texturas/metal.png")
+textura_donut = cargar_textura("texturas/metal_2.png")
+textura_esfera = cargar_textura("texturas/metal_esfera.png")
+textura_hilo = cargar_textura("texturas/hilo_metalico.png")
 
 
 clock = pygame.time.Clock()
@@ -162,21 +161,25 @@ def renderizar():
     # ===========
     # 5 donuts en el cilindro frontal
     # 5 donuts en el cilindro frontal
-    posiciones_x = [-3.6, -1.8, 0.0, 1.8, 3.6]  # Distribuidos uniformemente
+    # Ajustamos las posiciones para que estén más juntas
+    # Posiciones más cercanas entre sí
+    # Ajustamos las posiciones para separar un poco más las bolas
+    posiciones_x = [-2, -1, 0.0, 1, 2]
+
     for x in posiciones_x:
-        donut.dibujar(textura_id=textura_cilindro,
+        # Donuts frontales
+        donut.dibujar(textura_id=textura_donut,
                       t_x=x, t_y=3.5, t_z=1.5,
-                      angulo=90.0, eje_x=0.0, eje_y=0.0, eje_z=1.0,  # Rotación 90° en Y
-                      sx=0.22, sy=0.22, sz=0.12)  # Escala grande para verlos
+                      angulo=90.0, eje_x=0.0, eje_y=0.0, eje_z=1.0,
+                      sx=0.22, sy=0.22, sz=0.12)  # Volvemos al tamaño original
+        # El resto se mantiene igual usando las nuevas posiciones
         dibujar_hilo(cilindro, x, 3.5, 1.5, (x, 2.0, 0.0), es_trasero=False)
         dibujar_esfera_union(cilindro, x, 2.0, 0.0, es_trasero=False)
         dibujar_bola_pendulo(esfera, x, 2.0, 0.0, es_trasero=False)
-
-    # 5 donuts en el cilindro trasero
+    # Repetimos para los traseros
     for x in posiciones_x:
-        donut.dibujar(textura_id=textura_cilindro,
+        donut.dibujar(textura_id=textura_donut,
                       t_x=x, t_y=3.5, t_z=-1.5,
-                      # Rotación -90° en Y para el trasero
                       angulo=-90.0, eje_x=0.0, eje_y=0.0, eje_z=1.0,
                       sx=0.22, sy=0.22, sz=0.12)
         dibujar_hilo(esfera, x, 3.5, -1.5, (x, 2.0, 0.0), es_trasero=True)
@@ -201,7 +204,7 @@ def dibujar_hilo(modelo, t_x, t_y, t_z, punto_destino, es_trasero=False):
     angulo = 40.0 if not es_trasero else -40.0
 
     modelo.dibujar(
-        textura_id=textura_cilindro,
+        textura_id=textura_hilo,
         t_x=medio_x,
         t_y=medio_y,
         t_z=medio_z,
@@ -216,7 +219,7 @@ def dibujar_hilo(modelo, t_x, t_y, t_z, punto_destino, es_trasero=False):
 def dibujar_esfera_union(modelo, x, y, z, es_trasero=False):
     """Dibuja una media esfera en el extremo de los hilos"""
     esfera.dibujar(
-        textura_id=textura_cilindro,
+        textura_id=textura_donut,
         t_x=x,
         t_y=y - 0.3,  # Ajustamos altura para que coincida con los hilos
         t_z=z,
@@ -234,7 +237,7 @@ def dibujar_esfera_union(modelo, x, y, z, es_trasero=False):
 def dibujar_bola_pendulo(modelo, x, y, z, es_trasero=False):
     """Dibuja una bola grande del péndulo de Newton"""
     esfera.dibujar(
-        textura_id=textura_cilindro,
+        textura_id=textura_esfera,
         t_x=x,
         t_y=y - 0.8,  # Bajamos respecto a la posición de la esfera_union
         t_z=z,

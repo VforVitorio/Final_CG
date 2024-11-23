@@ -225,8 +225,8 @@ def dibujar_pendulos_traseros(posiciones_x, donut, cilindro, esfera):
                       t_x=x, t_y=3.5, t_z=-1.5,
                       angulo=-90.0, eje_x=0.0, eje_y=0.0, eje_z=1.0,
                       sx=0.22, sy=0.22, sz=0.12)
-        dibujar_hilo(esfera, x, 3.5, -1.5, (x, 2.0, 0.0), es_trasero=True)
-        dibujar_esfera_union(esfera, x, 2.0, 0.0, es_trasero=True)
+        dibujar_hilo(cilindro, x, 3.5, -1.5, (x, 2.0, 0.0), es_trasero=True)
+        dibujar_esfera_union(cilindro, x, 2.0, 0.0, es_trasero=True)
         dibujar_bola_pendulo(esfera, x, 2.0, 0.0, es_trasero=True)
 
 

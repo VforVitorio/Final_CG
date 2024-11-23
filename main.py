@@ -73,28 +73,19 @@ ejecutando = True
 # Renderiza la escena
 
 
-def renderizar():
-    """Renderiza los elementos de la escena, incluyendo la cámara, elementos auxiliares y el modelo 3D."""
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    glLoadIdentity()
-
-    glRotatef(camara.roll, 0, 0, 1)
-    cam_x, cam_y, cam_z = camara.obtener_posicion()
-    gluLookAt(cam_x, cam_y, cam_z, 0, 0, 0, 0, 1, 0)
-
-    glDisable(GL_LIGHTING)
-    dibujar_elementos_auxiliares(ejes=True, rejilla=True)
-    glEnable(GL_LIGHTING)
-
-    # Dibuja el cubo
-    # Dibuja la base (6.0x2.0x0.2)
+def dibujo_base():
+    """
+    Funcion que renderiza la base del pendulo
+    """
     cubo.dibujar(textura_id=textura_cubo, t_x=0.0, t_y=0.2, t_z=0.0,  # t_y=0.1 para ponerlo sobre la rejilla
                  angulo=0.0, eje_x=0.0, eje_y=0.0, eje_z=0.0,
                  sx=10.0, sy=0.4, sz=4.0)  # Dimensiones según especificaciones
 
-    # Dibuja los 4 cilindros en las esquinas
-    # Cilindros ajustados en altura y centrados en las rejillas
 
+def dibujo_estructura():
+    """
+    Diseño de la estructura de donde colgarán y sostienen las bolas e hilos del pendulo
+    """
     # Cilindro esquina frontal derecha
     cilindro.dibujar(textura_id=textura_cilindro, t_x=4.5, t_y=1.8, t_z=1.5,
                      angulo=0.0, eje_x=0.0, eje_y=0.0, eje_z=0.0,
@@ -114,10 +105,6 @@ def renderizar():
 
     # Cilindros horizontales que unen cilindros traseros y delanteros respectivamente
 
-    # Rotarlos 90 grados en eje z
-    # Ajustar escalado para que cubran la distancia entre cilindros verticales
-    # Posicionarlos a altura correcta
-
     # Cilindro horizontal frontal (conecta los cilindros frontales)
     cilindro.dibujar(textura_id=textura_cilindro, t_x=0.0, t_y=3.5, t_z=1.5,
                      angulo=90.0, eje_x=0.0, eje_y=0.0, eje_z=1.0,
@@ -128,15 +115,11 @@ def renderizar():
                      angulo=90.0, eje_x=0.0, eje_y=0.0, eje_z=1.0,
                      sx=0.25, sy=9.0, sz=0.25)
 
-    # Se añaden esferas pequeñas en los puntos de union
-    # Se colocan en las 8 intersecciones (4 frontales y 4 traseras)
 
-    # Cuartos de esfera en las intersecciones de los cilindros horizontales
-
-    # Delantero derecho
-    # Delantero derecho
-    # Delantero derecho (se mantiene igual)
-    # Delantero derecho (se mantiene igual)
+def dibujo_esquinas():
+    """
+    Renderizacion de las esquinas curvas del modelo, a partir de semiesferas
+    """
     cuarto_esfera.dibujar(textura_id=textura_cilindro, t_x=4.49, t_y=3.48, t_z=1.5,
                           angulo=-90.0, eje_x=1.0, eje_y=0.0, eje_z=0.0,
                           sx=0.3, sy=0.3, sz=0.3)
@@ -155,36 +138,6 @@ def renderizar():
     cuarto_esfera.dibujar(textura_id=textura_cilindro, t_x=-4.49, t_y=3.48, t_z=-1.5,
                           angulo=180.0, eje_x=0.0, eje_y=1.0, eje_z=1.0,  # Primero girar en Y
                           sx=0.3, sy=0.3, sz=0.3)
-
-    # ===========
-    # Dibujo de las anillas
-    # ===========
-    # 5 donuts en el cilindro frontal
-    # 5 donuts en el cilindro frontal
-    # Ajustamos las posiciones para que estén más juntas
-    # Posiciones más cercanas entre sí
-    # Ajustamos las posiciones para separar un poco más las bolas
-    posiciones_x = [-2, -1, 0.0, 1, 2]
-
-    for x in posiciones_x:
-        # Donuts frontales
-        donut.dibujar(textura_id=textura_donut,
-                      t_x=x, t_y=3.5, t_z=1.5,
-                      angulo=90.0, eje_x=0.0, eje_y=0.0, eje_z=1.0,
-                      sx=0.22, sy=0.22, sz=0.12)  # Volvemos al tamaño original
-        # El resto se mantiene igual usando las nuevas posiciones
-        dibujar_hilo(cilindro, x, 3.5, 1.5, (x, 2.0, 0.0), es_trasero=False)
-        dibujar_esfera_union(cilindro, x, 2.0, 0.0, es_trasero=False)
-        dibujar_bola_pendulo(esfera, x, 2.0, 0.0, es_trasero=False)
-    # Repetimos para los traseros
-    for x in posiciones_x:
-        donut.dibujar(textura_id=textura_donut,
-                      t_x=x, t_y=3.5, t_z=-1.5,
-                      angulo=-90.0, eje_x=0.0, eje_y=0.0, eje_z=1.0,
-                      sx=0.22, sy=0.22, sz=0.12)
-        dibujar_hilo(esfera, x, 3.5, -1.5, (x, 2.0, 0.0), es_trasero=True)
-        dibujar_esfera_union(esfera, x, 2.0, 0.0, es_trasero=True)
-        dibujar_bola_pendulo(esfera, x, 2.0, 0.0, es_trasero=True)
 
 
 def dibujar_hilo(modelo, t_x, t_y, t_z, punto_destino, es_trasero=False):
@@ -249,6 +202,71 @@ def dibujar_bola_pendulo(modelo, x, y, z, es_trasero=False):
         sy=1.0,      # Mantener proporciones esféricas
         sz=1.0      # Mantener proporciones esféricas
     )
+
+
+def dibujar_pendulos_frontales(posiciones_x, donut, cilindro, esfera):
+    """Dibuja los péndulos de la parte frontal"""
+    for x in posiciones_x:
+        # Donuts frontales
+        donut.dibujar(textura_id=textura_donut,
+                      t_x=x, t_y=3.5, t_z=1.5,
+                      angulo=90.0, eje_x=0.0, eje_y=0.0, eje_z=1.0,
+                      sx=0.22, sy=0.22, sz=0.12)
+        # El resto se mantiene igual usando las nuevas posiciones
+        dibujar_hilo(cilindro, x, 3.5, 1.5, (x, 2.0, 0.0), es_trasero=False)
+        dibujar_esfera_union(cilindro, x, 2.0, 0.0, es_trasero=False)
+        dibujar_bola_pendulo(esfera, x, 2.0, 0.0, es_trasero=False)
+
+
+def dibujar_pendulos_traseros(posiciones_x, donut, cilindro, esfera):
+    """Dibuja los péndulos de la parte trasera"""
+    for x in posiciones_x:
+        donut.dibujar(textura_id=textura_donut,
+                      t_x=x, t_y=3.5, t_z=-1.5,
+                      angulo=-90.0, eje_x=0.0, eje_y=0.0, eje_z=1.0,
+                      sx=0.22, sy=0.22, sz=0.12)
+        dibujar_hilo(esfera, x, 3.5, -1.5, (x, 2.0, 0.0), es_trasero=True)
+        dibujar_esfera_union(esfera, x, 2.0, 0.0, es_trasero=True)
+        dibujar_bola_pendulo(esfera, x, 2.0, 0.0, es_trasero=True)
+
+
+def renderizar():
+    """Renderiza los elementos de la escena, incluyendo la cámara, elementos auxiliares y el modelo 3D."""
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    glLoadIdentity()
+
+    glRotatef(camara.roll, 0, 0, 1)
+    cam_x, cam_y, cam_z = camara.obtener_posicion()
+    gluLookAt(cam_x, cam_y, cam_z, 0, 0, 0, 0, 1, 0)
+
+    glDisable(GL_LIGHTING)
+    dibujar_elementos_auxiliares(ejes=True, rejilla=True)
+    glEnable(GL_LIGHTING)
+
+    # Dibuja el cubo
+    # Dibuja la base (6.0x2.0x0.2)
+    dibujo_base()
+
+    # Dibuja los 4 cilindros en las esquinas
+    # Cilindros ajustados en altura y centrados en las rejillas
+    dibujo_estructura()
+
+    # Se añaden esferas pequeñas en los puntos de union
+    # Se colocan en las 8 intersecciones (4 frontales y 4 traseras)
+
+    # Cuartos de esfera en las intersecciones de los cilindros horizontales
+    dibujo_esquinas()
+    # ===========
+    # Dibujo de las anillas
+    # ===========
+    # 5 donuts en el cilindro frontal
+    # 5 donuts en el cilindro frontal
+    # Ajustamos las posiciones para que estén más juntas
+    # Posiciones más cercanas entre sí
+    # Ajustamos las posiciones para separar un poco más las bolas
+    posiciones_x = [-2, -1, 0.0, 1, 2]
+    dibujar_pendulos_frontales(posiciones_x, donut, cilindro, esfera)
+    dibujar_pendulos_traseros(posiciones_x, donut, cilindro, esfera)
 
 
 # Bucle principal de la aplicación

@@ -38,7 +38,7 @@ class Modelo:
         Lee el archivo línea por línea y clasifica los datos en vértices, normales y coordenadas de textura.
         Luego, asocia estos elementos en triángulos.
         """
-        with open(self.filename) as file:
+        with open(self.filename, encoding='latin-1') as file:
             for line in file:
                 # Si la línea define un vértice (v x y z)
                 if line.startswith("v "):

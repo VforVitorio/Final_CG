@@ -1,4 +1,21 @@
 def convertir_a_cuarto_esfera(obj_entrada, obj_salida):
+    """
+    Convierte un modelo 3D de una esfera completa en un cuarto de esfera (cuadrante frontal derecho)
+    y guarda el resultado en un nuevo archivo OBJ. La función también calcula las coordenadas de textura
+    y las normales para los vértices del cuarto de esfera.
+
+    Args:
+        obj_entrada (str): Ruta del archivo OBJ de entrada que contiene la esfera completa.
+        obj_salida (str): Ruta del archivo OBJ de salida donde se guardará el cuarto de esfera.
+
+    El archivo de entrada debe estar en formato OBJ y contener vértices (v), coordenadas de textura (vt),
+    normales (vn) y caras (f). La función filtra los vértices para mantener solo aquellos en el cuadrante
+    frontal derecho (x >= 0 y z >= 0), recalcula las coordenadas de textura y las normales, y ajusta las
+    caras para referirse a los nuevos índices de vértices.
+
+    Ejemplo de uso:
+        convertir_a_cuarto_esfera('modelos/esfera.obj', 'modelos/cuarto_esfera.obj')
+    """
     vertices = []
     caras = []
     nuevos_vertices = []
@@ -12,10 +29,10 @@ def convertir_a_cuarto_esfera(obj_entrada, obj_salida):
             if linea.startswith('v '):
                 x, y, z = map(float, linea.strip().split()[1:])
                 # Solo mantener vértices del cuadrante frontal derecho
-                if x >= 0 and z >= 0:  # Modificado para un verdadero cuarto
+                if x >= 0 and z >= 0:
                     nuevos_vertices.append(f"v {x} {y} {z}\n")
                     # Calcular coordenadas UV
-                    u = x / (2.0 * 3.14159)  # Ajustado para mejor mapeo
+                    u = x / (2.0 * 3.14159)
                     v = 0.5 + (y / 3.14159)
                     nuevas_texturas.append(f"vt {u:.6f} {v:.6f}\n")
                     # Calcular normal
@@ -31,7 +48,7 @@ def convertir_a_cuarto_esfera(obj_entrada, obj_salida):
     # Filtrar vértices válidos
     vertices_validos = set()
     for i, (x, y, z) in enumerate(vertices, 1):
-        if x >= 0 and z >= 0:  # Misma condición que arriba
+        if x >= 0 and z >= 0:
             vertices_validos.add(i)
 
     # Crear caras
@@ -53,7 +70,3 @@ def convertir_a_cuarto_esfera(obj_entrada, obj_salida):
         f.writelines(nuevas_texturas)
         f.writelines(nuevas_normales)
         f.writelines(nuevas_caras)
-
-
-# Uso
-convertir_a_cuarto_esfera('modelos/esfera.obj', 'modelos/cuarto_esfera.obj')

@@ -50,7 +50,7 @@ def inicializar_escena():
 # Configuración e inicialización del entorno
 screen = inicializar_escena()  # Crea la ventana y configura el contexto OpenGL
 
-# Modelos
+# Carga de los modelos haciendo instancias de la Clase Modelo, junto al archivo obj a cargar
 cubo = Modelo("modelos/cubo.obj")
 cono = Modelo("modelos/cono.obj")
 cilindro = Modelo("modelos/cilindro.obj")
@@ -59,7 +59,7 @@ esfera = Modelo("modelos/esfera.obj")
 cuarto_esfera = Modelo("modelos/cuarto_esfera.obj")
 
 
-# Texturas
+# Carga de texturas para cada uno de los objetos
 textura_cubo = cargar_textura("texturas/madera.png")  # Textura marrón
 textura_cilindro = cargar_textura("texturas/metal.png")
 textura_donut = cargar_textura("texturas/metal_2.png")
@@ -67,24 +67,31 @@ textura_esfera = cargar_textura("texturas/metal_esfera.png")
 textura_hilo = cargar_textura("texturas/hilo_metalico.png")
 
 
+# Definición del reloj e inicio de la variable ejecutando en true
 clock = pygame.time.Clock()
 ejecutando = True
 
-# Renderiza la escena
+# Funciones de renderización de la escena
 
 
 def dibujo_base():
     """
-    Funcion que renderiza la base del pendulo
+    Funcion que renderiza la base del pendulo.
+
+    Instancia del modelo cubo, aplanándolo y poniéndolo justo encima de la rejilla
     """
     cubo.dibujar(textura_id=textura_cubo, t_x=0.0, t_y=0.2, t_z=0.0,  # t_y=0.1 para ponerlo sobre la rejilla
                  angulo=0.0, eje_x=0.0, eje_y=0.0, eje_z=0.0,
-                 sx=10.0, sy=0.4, sz=4.0)  # Dimensiones según especificaciones
+                 sx=10.0, sy=0.4, sz=4.0)
 
 
 def dibujo_estructura():
     """
-    Diseño de la estructura de donde colgarán y sostienen las bolas e hilos del pendulo
+    Diseño de la estructura de donde colgarán y sostienen las bolas e hilos del pendulo.
+
+    Instancia de 6 cilindros:
+        - 4 verticales: soporte del péndulo.
+        - 2 horizontales: unión de los soportes, de donde irán sujetadas las bolas del péndulo.
     """
     # Cilindro esquina frontal derecha
     cilindro.dibujar(textura_id=textura_cilindro, t_x=4.5, t_y=1.8, t_z=1.5,
@@ -118,7 +125,13 @@ def dibujo_estructura():
 
 def dibujo_esquinas():
     """
-    Renderizacion de las esquinas curvas del modelo, a partir de semiesferas
+    Renderizacion de las esquinas curvas del modelo, a partir de semiesferas.
+
+    Dispuestas en la intersección de los cilindros traseros y delanteros verticales 
+    con su respectivo cilindro horizontal.
+
+    Ayuda a dar una forma curva a las esquinas.
+
     """
     cuarto_esfera.dibujar(textura_id=textura_cilindro, t_x=4.49, t_y=3.48, t_z=1.5,
                           angulo=-90.0, eje_x=1.0, eje_y=0.0, eje_z=0.0,
@@ -141,7 +154,30 @@ def dibujo_esquinas():
 
 
 def dibujar_hilo(modelo, t_x, t_y, t_z, punto_destino, es_trasero=False):
-    """Dibuja un hilo desde un punto origen a un punto destino"""
+    """Dibuja un hilo desde un punto origen a un punto destino
+
+    Usado para dibujar los hilos que sujetan las bolas del péndulo.
+
+    Punto inicial: cada una de las anillas dispuestas en los cilindros horizontales.
+    Punto final: pequeña semiesfera soporte de las bolas del péndulo.
+
+
+    Args:
+        modelo (Modelo): Instancia del modelo del hilo.
+        t_x (float): Posición en el eje X del punto de origen.
+        t_y (float): Posición en el eje Y del punto de origen.
+        t_z (float): Posición en el eje Z del punto de origen.
+        punto_destino (tuple): Coordenadas (x, y, z) del punto destino.
+        es_trasero (bool): Indica si el hilo cuelga del cilindro trasero.
+
+    Componentes:
+        - Cálculo de la longitud del hilo.
+        - Colocación del hilo en los puntos iniciales y finales.
+        - Definición del ángulo de inclinación de los hilos, a partir de si cuelgan del cilindro trasero o no
+        - Dibujo de los hilos con método de la instancia modelo.
+
+
+    """
     # Calculamos la longitud
     dx = punto_destino[0] - t_x
     dy = punto_destino[1] - (t_y - 0.2)
@@ -150,29 +186,57 @@ def dibujar_hilo(modelo, t_x, t_y, t_z, punto_destino, es_trasero=False):
 
     # Ajustamos el punto medio para que el extremo coincida con el donut
     medio_x = t_x + dx/4  # Desplazamos 1/4 de la distancia en X
-    medio_y = (t_y - 0.2) + dy/2  # Desplazamos 1/4 de la distancia en Y
-    medio_z = t_z + dz/2  # Desplazamos 1/4 de la distancia en Z
+    medio_y = (t_y - 0.2) + dy/2  # Desplazamos 1/2 de la distancia en Y
+    medio_z = t_z + dz/2  # Desplazamos 1/2 de la distancia en Z
 
     # Ángulo de inclinación
     angulo = 40.0 if not es_trasero else -40.0
 
     modelo.dibujar(
+        # Definicion de la textura
         textura_id=textura_hilo,
+        # Definicion de las posiciones del hilo
         t_x=medio_x,
         t_y=medio_y,
         t_z=medio_z,
+        # Angulos de rotacion
         angulo=angulo,
         eje_x=1.0, eje_y=0.0, eje_z=0.0,
+        # Dimensiones del objeto a partir del escalado
         sx=0.01,
         sy=longitud/2,  # Mantenemos la mitad de la longitud
         sz=0.01
     )
 
 
-def dibujar_esfera_union(modelo, x, y, z, es_trasero=False):
-    """Dibuja una media esfera en el extremo de los hilos"""
+def dibujar_esfera_union(esfera, x, y, z, es_trasero=False):
+    """
+    Dibuja una media esfera en el extremo de los hilos.
+
+    Son las semiesferas de las que cuelgan las bolas del pendulo
+
+    Creacion de instancia de objeto esfera:
+        - Aplicacion de la misma textura que las anillas
+        - Transformaciones necesarias para disponerlas a la altura de la intersección de los hilos.
+        - Rotacion de la esfera para que se disponga horizontalmente.
+        - Transformaciones de dimensiones para que sea pequeña.
+
+    Args:
+        esfera (Modelo): Instancia del modelo de la esfera.
+        x (float): Posición en el eje X.
+        y (float): Posición en el eje Y.
+        z (float): Posición en el eje Z.
+        es_trasero (bool): Indica si la esfera está en la parte trasera.
+
+
+
+
+
+    """
     esfera.dibujar(
+        # Se aplica la textura de las anillas
         textura_id=textura_donut,
+        # Se ajusta la posicion en el eje y
         t_x=x,
         t_y=y - 0.3,  # Ajustamos altura para que coincida con los hilos
         t_z=z,
@@ -187,8 +251,23 @@ def dibujar_esfera_union(modelo, x, y, z, es_trasero=False):
     )
 
 
-def dibujar_bola_pendulo(modelo, x, y, z, es_trasero=False):
-    """Dibuja una bola grande del péndulo de Newton"""
+def dibujar_bola_pendulo(esfera, x, y, z, es_trasero=False):
+    """
+    Dibuja una bola grande del péndulo de Newton.
+
+    Instancia del modelo esfera.
+    Se baja la altura para que se disponga justo debajo de la semiesfera de union.
+    Sin rotacion, puesto que es una esfera completa.
+    Escalado de 1, para que sea una esfera de dimensiones grandes.
+
+     Args:
+        esfera (Modelo): Instancia del modelo de la esfera.
+        x (float): Posición en el eje X.
+        y (float): Posición en el eje Y.
+        z (float): Posición en el eje Z.
+        es_trasero (bool): Indica si la bola está en la parte trasera.
+
+    """
     esfera.dibujar(
         textura_id=textura_esfera,
         t_x=x,
@@ -205,7 +284,23 @@ def dibujar_bola_pendulo(modelo, x, y, z, es_trasero=False):
 
 
 def dibujar_pendulos_frontales(posiciones_x, donut, cilindro, esfera):
-    """Dibuja los péndulos de la parte frontal"""
+    """
+
+    Dibuja los péndulos de la parte frontal
+    Se usan las funciones de dibujo de hilos, esferas de union y bolas del pendulo.
+
+    A traves de la definicon de posiciones en el eje x, se ejecuta bucle 
+    que renderiza las anillas de las que salen los hilos, semiesferas de union y bolas del pendulo.
+
+
+
+    Args:
+        posiciones_x (list): Lista de posiciones en el eje X para los péndulos.
+        donut (Modelo): Instancia del modelo del donut.
+        cilindro (Modelo): Instancia del modelo del cilindro.
+        esfera (Modelo): Instancia del modelo de la esfera.
+
+    """
     for x in posiciones_x:
         # Donuts frontales
         donut.dibujar(textura_id=textura_donut,
@@ -219,7 +314,20 @@ def dibujar_pendulos_frontales(posiciones_x, donut, cilindro, esfera):
 
 
 def dibujar_pendulos_traseros(posiciones_x, donut, cilindro, esfera):
-    """Dibuja los péndulos de la parte trasera"""
+    """
+
+    Dibuja los péndulos de la parte trasera.
+
+    Misma funcion que pendulos delanteros, pero cambiando valores de ángulos por sus negativos 
+    y estableciendo el booleano es_trasero por True.
+
+     Args:
+        posiciones_x (list): Lista de posiciones en el eje X para los péndulos.
+        donut (Modelo): Instancia del modelo del donut.
+        cilindro (Modelo): Instancia del modelo del cilindro.
+        esfera (Modelo): Instancia del modelo de la esfera.
+
+    """
     for x in posiciones_x:
         donut.dibujar(textura_id=textura_donut,
                       t_x=x, t_y=3.5, t_z=-1.5,
@@ -231,7 +339,15 @@ def dibujar_pendulos_traseros(posiciones_x, donut, cilindro, esfera):
 
 
 def renderizar():
-    """Renderiza los elementos de la escena, incluyendo la cámara, elementos auxiliares y el modelo 3D."""
+    """
+    Renderiza los elementos de la escena, incluyendo la cámara, elementos auxiliares y el modelo 3D.
+
+    Funcion principal encargada de renderizar todos los elementos de la escena.
+        - Dibujo de la base.
+        - Dibujo de la estructura.
+        - Dibujo de los péndulos delanteros y traseros.
+
+    """
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
 
@@ -253,9 +369,9 @@ def renderizar():
 
     # Se añaden esferas pequeñas en los puntos de union
     # Se colocan en las 8 intersecciones (4 frontales y 4 traseras)
-
     # Cuartos de esfera en las intersecciones de los cilindros horizontales
     dibujo_esquinas()
+
     # ===========
     # Dibujo de las anillas
     # ===========

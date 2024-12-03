@@ -1,189 +1,215 @@
-# main.py
-from modelo import Modelo
-from utilidades import *
-from usuario import *
-from camara import Camara
-from configuracion import *
-from luces import configurar_luces
-from texturas import cargar_textura
+import pygame
+from pygame.locals import *
+from OpenGL.GL import *
+from OpenGL.GLU import *
 import math
-import numpy as np
 import pymunk
 from pymunk.vec2d import Vec2d
 
-G = 9820            # Gravedad ajustada como en el ejemplo
-L = 2.0
-INITIAL_IMPULSE = -12000  # Impulso inicial
+# Window Settings
+SCREEN_WIDTH = 1200
+SCREEN_HEIGHT = 800
+FOV = 45
+SCREEN_ASPECT_RATIO = SCREEN_WIDTH / SCREEN_HEIGHT
+NEAR_PLANE = 0.1
+FAR_PLANE = 100.0
+FPS = 60
+MILLISECONDS_PER_SECOND = 1000
+
+# Cradle Settings
+NUMBER_OF_PENDULUMS = 5
+PENDULUM_RADIUS = 0.45
+PENDULUM_LENGTH = 2.0
+PENDULUM_MASS = 10
+INITIAL_IMPULSE = -12000
+GRAVITY = 9820
+DAMPING = 0.999
 
 
-class Pendulo:
-    def __init__(self, pos_x, is_moving=False):
-        # Configuración física
-        self.mass = 10
-        self.radius = 0.45  # Radio de la bola
+class Camara:
+    def __init__(self):
+        self.distance = 10.0
+        self.rot_x = 30
+        self.rot_y = 0
+        self.rot_z = 0
+        self.pos_x = 0
+        self.pos_y = 0
+        self.pos_z = self.distance
+
+    def actualizar_camara(self):
+        self.pos_x = self.distance * math.sin(math.radians(self.rot_y))
+        self.pos_z = self.distance * math.cos(math.radians(self.rot_y))
+
+    def obtener_posicion(self):
+        return (self.pos_x, self.pos_y, self.pos_z)
+
+
+class Pendulum:
+    def __init__(self, pos_x, space, is_moving=False):
+        self.mass = PENDULUM_MASS
+        self.radius = PENDULUM_RADIUS
         self.moment = pymunk.moment_for_circle(self.mass, 0, self.radius)
 
-        # Crear cuerpo físico
+        # Physical body
         self.body = pymunk.Body(self.mass, self.moment)
-        self.body.position = pos_x, 2.0  # Posición inicial
+        self.body.position = pos_x, 2.0
         self.shape = pymunk.Circle(self.body, self.radius)
-        self.shape.elasticity = 0.9999  # Alta elasticidad para conservar energía
+        self.shape.elasticity = 0.9999
 
-        # Punto de anclaje
-        self.anchor_pos = (pos_x, 3.5)
+        # Anchor point (now in 3D)
+        self.anchor_pos = (pos_x, 3.5, 0.0)
 
-        # Aplicar impulso inicial si es necesario
+        # Add to space
+        space.add(self.body, self.shape)
+        # Convert 3D anchor position back to 2D for pymunk
+        joint = pymunk.PinJoint(
+            space.static_body, self.body, (self.anchor_pos[0], self.anchor_pos[1]), (0, 0))
+        space.add(joint)
+
         if is_moving:
             self.body.apply_impulse_at_local_point((INITIAL_IMPULSE, 0))
 
     def get_position(self):
-        return (self.body.position.x, self.body.position.y, 0)
+        """Returns the position as a 3D tuple"""
+        return (self.body.position.x, self.body.position.y, 0.0)
 
 
-def inicializar_escena():
-    """Inicializa la ventana gráfica con Pygame y configura los ajustes de OpenGL para la escena 3D.
-
-    Returns:
-        screen: Objeto de la ventana gráfica creada por Pygame.
-    """
+def init_scene():
     pygame.init()
     screen = pygame.display.set_mode(
         (SCREEN_WIDTH, SCREEN_HEIGHT), DOUBLEBUF | OPENGL)
-    pygame.display.set_caption('VEGA SOBRAL VICTOR')
+    pygame.display.set_caption("3D Newton's Cradle")
 
-    # Configuración de OpenGL
-    glClearColor(0, 0, 0, 1)  # Fondo negro
-    glEnable(GL_DEPTH_TEST)  # Activa el z-buffer para la profundidad
-    glShadeModel(GL_SMOOTH)  # Activa el sombreado suave
-    glMatrixMode(GL_PROJECTION)  # Selecciona la matriz de proyección
-    # Configura la proyección en perspectiva
-    gluPerspective(FOV, SCREEN_ASPECT_RATIO, NEAR_PLANE, FAR_PLANE)
-    glMatrixMode(GL_MODELVIEW)  # Selecciona la matriz de modelo-vista
-    glLoadIdentity()  # Restablece la matriz a la identidad
-    # Inicializa la iluminación
-    configurar_luces()
-    # Activa la luz 1 (GL_LIGHT0)
-    glEnable(GL_LIGHT0)
-    # Activa la luz 2
-    glEnable(GL_LIGHT1)
-
-    # Activa la iluminación en general
+    glClearColor(0.9, 0.9, 0.9, 1)
+    glEnable(GL_DEPTH_TEST)
+    glShadeModel(GL_SMOOTH)
     glEnable(GL_LIGHTING)
+    glEnable(GL_LIGHT0)
+    glLightfv(GL_LIGHT0, GL_POSITION, (5, 5, 5, 1))
+    glLightfv(GL_LIGHT0, GL_AMBIENT, (0.2, 0.2, 0.2, 1))
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, (0.5, 0.5, 0.5, 1))
+
+    glMatrixMode(GL_PROJECTION)
+    gluPerspective(FOV, SCREEN_ASPECT_RATIO, NEAR_PLANE, FAR_PLANE)
+    glMatrixMode(GL_MODELVIEW)
+
     return screen
 
 
-# Inicialización
-camara = Camara()
-screen = inicializar_escena()
-
-# Modelos y texturas
-esfera = Modelo("modelos/esfera.obj")
-cilindro = Modelo("modelos/cilindro.obj")
-
-textura_esfera = cargar_textura("texturas/gris.png")
-textura_hilo = cargar_textura("texturas/gris.png")
-
-clock = pygame.time.Clock()
-ejecutando = True
-
-# Inicialización del espacio físico
-space = pymunk.Space()
-space.gravity = (0, -G)
-space.damping = 0.999  # Amortiguación mínima
+def draw_sphere(position, radius):
+    glPushMatrix()
+    glTranslatef(position[0], position[1], position[2])
+    quad = gluNewQuadric()
+    glColor3f(0.7, 0.7, 0.7)
+    gluSphere(quad, radius, 32, 32)
+    glPopMatrix()
 
 
-tiempo = 0.0
-# Modificar la creación de péndulos
-pendulos = [
-    Pendulo(-0.5, False),
-    Pendulo(0.5, True)
-]
+def draw_cylinder(start, end, radius):
+    """Draw a cylinder from start to end point
+    start: (x, y, z) tuple
+    end: (x, y, z) tuple
+    radius: float
+    """
+    glPushMatrix()
 
-# Agregar péndulos al espacio
-for p in pendulos:
-    space.add(p.body, p.shape)
-    # Crear articulación fija en el punto de anclaje
-    joint = pymunk.PinJoint(space.static_body, p.body, p.anchor_pos, (0, 0))
-    space.add(joint)
+    # Calculate the direction vector
+    direction = (end[0] - start[0], end[1] - start[1], end[2] - start[2])
+    length = math.sqrt(sum(x*x for x in direction))
 
+    # Calculate rotation angle and axis
+    if length > 0:
+        dx, dy, dz = (x/length for x in direction)
+        angle = math.acos(dy) * 180/math.pi
+        # Avoid division by zero when calculating rotation axis
+        if abs(dx) < 1e-6 and abs(dz) < 1e-6:
+            # Default axis if the cylinder is perfectly vertical
+            axis = (1, 0, 0)
+        else:
+            axis = (-dz, 0, dx)
+    else:
+        angle = 0
+        axis = (1, 0, 0)
 
-def renderizar():
-    global tiempo
+    # Position and rotate
+    glTranslatef(start[0], start[1], start[2])
+    if angle != 0:  # Only rotate if needed
+        glRotatef(angle, axis[0], axis[1], axis[2])
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-    glLoadIdentity()
+    # Draw cylinder
+    quad = gluNewQuadric()
+    glColor3f(0.4, 0.4, 0.4)
+    gluCylinder(quad, radius, radius, length, 32, 1)
+    gluDeleteQuadric(quad)
 
-    glRotatef(camara.roll, 0, 0, 1)
-    cam_x, cam_y, cam_z = camara.obtener_posicion()
-    gluLookAt(cam_x, cam_y, cam_z, 0, 0, 0, 0, 1, 0)
-
-    glDisable(GL_LIGHTING)
-    dibujar_elementos_auxiliares(ejes=True, rejilla=True)
-    glEnable(GL_LIGHTING)
-
-    # Actualizar física
-    space.step(delta_time)
-
-    # Dibujar péndulos
-    for pendulo in pendulos:
-        pos = pendulo.get_position()
-        dibujar_hilo(
-            cilindro, pendulo.anchor_pos[0], pendulo.anchor_pos[1], 0, pos)
-        dibujar_bola_pendulo(esfera, pos[0], pos[1], pos[2])
-
-    tiempo += delta_time
+    glPopMatrix()
 
 
-def dibujar_hilo(modelo, t_x, t_y, t_z, punto_destino):
-    dx = punto_destino[0] - t_x
-    dy = punto_destino[1] - t_y
-    dz = punto_destino[2] - t_z
-    longitud = math.sqrt(dx*dx + dy*dy + dz*dz)
+def main():
+    screen = init_scene()
+    clock = pygame.time.Clock()
+    camera = Camara()
 
-    # Calcular ángulo de rotación para el hilo
-    angulo = math.atan2(dx, -dy) * 180.0 / math.pi
+    # Physics setup
+    space = pymunk.Space()
+    space.gravity = (0, -GRAVITY)
+    space.damping = DAMPING
 
-    modelo.dibujar(
-        textura_id=textura_hilo,
-        t_x=t_x + dx/2,  # Punto medio en X
-        t_y=t_y + dy/2,  # Punto medio en Y
-        t_z=t_z,
-        angulo=angulo,   # Aplicar rotación
-        eje_x=0.0,
-        eje_y=0.0,
-        eje_z=1.0,       # Rotar alrededor del eje Z
-        sx=0.01,
-        sy=longitud,
-        sz=0.01
-    )
+    # Create pendulums
+    pendulums = []
+    start_x = -(NUMBER_OF_PENDULUMS - 1) * PENDULUM_RADIUS
+    for i in range(NUMBER_OF_PENDULUMS):
+        is_moving = (i == 0)  # First pendulum starts with movement
+        pendulums.append(
+            Pendulum(start_x + i * PENDULUM_RADIUS * 2, space, is_moving))
+
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    camera.rot_y -= 5
+                elif event.key == pygame.K_RIGHT:
+                    camera.rot_y += 5
+                elif event.key == pygame.K_UP:
+                    camera.distance = max(5, camera.distance - 0.5)
+                elif event.key == pygame.K_DOWN:
+                    camera.distance = min(20, camera.distance + 0.5)
+
+        # Update physics
+        space.step(1/FPS)
+
+        # Update camera
+        camera.actualizar_camara()
+
+        # Clear screen
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        glLoadIdentity()
+
+        # Position camera
+        cam_pos = camera.obtener_posicion()
+        gluLookAt(cam_pos[0], cam_pos[1], cam_pos[2], 0, 0, 0, 0, 1, 0)
+
+        # Draw support bar
+        glColor3f(0.4, 0.4, 0.4)
+        bar_length = (NUMBER_OF_PENDULUMS + 1) * PENDULUM_RADIUS
+        draw_cylinder((-bar_length, 3.5, 0), (bar_length, 3.5, 0), 0.1)
+
+        # Draw pendulums
+        for pendulum in pendulums:
+            pos = pendulum.get_position()
+            # Draw string
+            draw_cylinder(pendulum.anchor_pos, pos, 0.02)
+            # Draw ball
+            draw_sphere(pos, pendulum.radius)
+
+        pygame.display.flip()
+        clock.tick(FPS)
+
+    pygame.quit()
 
 
-def dibujar_bola_pendulo(modelo, x, y, z):
-    esfera.dibujar(
-        textura_id=textura_esfera,
-        t_x=x,
-        t_y=y,
-        t_z=z,
-        angulo=0.0,
-        eje_x=1.0, eje_y=0.0, eje_z=0.0,
-        sx=0.8,
-        sy=0.8,
-        sz=0.8
-    )
-
-
-while ejecutando:
-    delta_time = clock.tick(FPS) / MILLISECONDS_PER_SECOND
-    for evento in pygame.event.get():
-        if evento.type == pygame.QUIT:
-            ejecutando = False
-        elif evento.type in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP, pygame.MOUSEMOTION, pygame.MOUSEWHEEL):
-            procesar_eventos_raton(evento, camara)
-
-    consultar_estado_teclado(camara, delta_time)
-    camara.actualizar_camara()
-    configurar_luces()
-    renderizar()
-    pygame.display.flip()
-
-pygame.quit()
+if __name__ == "__main__":
+    main()

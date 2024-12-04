@@ -52,7 +52,6 @@ screen = inicializar_escena()  # Crea la ventana y configura el contexto OpenGL
 
 # Carga de los modelos haciendo instancias de la Clase Modelo, junto al archivo obj a cargar
 cubo = Modelo("modelos/cubo.obj")
-cono = Modelo("modelos/cono.obj")
 cilindro = Modelo("modelos/cilindro.obj")
 donut = Modelo("modelos/donut.obj")
 esfera = Modelo("modelos/esfera.obj")

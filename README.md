@@ -2,7 +2,7 @@
 
 ## 📝 Descripción
 
-En este repositorio se encuentra el código desarrollado por el Grupo 02 de la asignatura de Computación Gráfica para el renderizado, diseño y modelado de un péndulo de Newton.
+En este repositorio se encuentra el código desarrollado por el Grupo 06 de la asignatura de Computación Gráfica para el renderizado, diseño y modelado de un péndulo de Newton.
 
 Se trata del primer modelo desarrollado, ausente de simulación física y con las operaciones enviadas a la CPU.
 
